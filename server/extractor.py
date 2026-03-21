@@ -7,5 +7,5 @@ def extract_text(file_path):
             content=content+text
         return content
 
-page_content=extract_text(r"C:\Users\akash\Documents\Local_serv\server\SONUAKASHSOUNDARARAJAN_RESUME.pdf")
-print(page_content)
+#page_content=extract_text(r"C:\Users\akash\Documents\Local_serv\server\SONUAKASHSOUNDARARAJAN_RESUME.pdf")
+#print(page_content)
