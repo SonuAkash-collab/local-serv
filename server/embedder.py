@@ -5,5 +5,3 @@ def get_embedding(text):
     embedding = model.encode(text)
     return embedding
 
-embedding = get_embedding("This is my test sentence")
-print(embedding)
