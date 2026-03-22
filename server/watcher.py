@@ -4,8 +4,14 @@ from watchdog.events import FileSystemEventHandler
 from extractor import extract_text
 import joblib
 from embedder import get_embedding
+from pathlib import Path
 
-model = joblib.load(r"C:\Users\akash\Documents\Local_serv\models\classifier.pkl")
+BASE_DIR = Path(__file__).resolve().parent.parent
+MODEL_PATH = BASE_DIR / "models" / "classifier.pkl"
+UPLOADS_DIR = BASE_DIR / "uploads"
+
+model = joblib.load(MODEL_PATH)  # Path object works fine with joblib
+# rest of your code unchanged
 
 
 class MyHandler(FileSystemEventHandler):
@@ -18,7 +24,7 @@ class MyHandler(FileSystemEventHandler):
             category = model.predict([embedding])[0]
             print(f"File: {path} → Category: {category}")
 
-folder_to_watch = r"C:\Users\akash\Documents\Local_serv\uploads"
+folder_to_watch = UPLOADS_DIR
 
 observer = Observer()
 observer.schedule(MyHandler(), folder_to_watch, recursive=False)
