@@ -80,3 +80,6 @@ smart-doc-server/
 - semantic search
 - vector db
 - web ui
+
+
+whats completed - added fast api endpoint with server, connection established and data transmission happened properly can open sites from this laptop
