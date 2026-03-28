@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Classifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e6e6e6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(94, 206, 255, 0.3);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #5eceff, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(94, 206, 255, 0.2);
+            border-radius: 25px;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(94, 206, 255, 0.2);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Upload Card */
+        .upload-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(94, 206, 255, 0.15);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .upload-card:hover {
+            border-color: rgba(94, 206, 255, 0.3);
+            box-shadow: 0 10px 40px rgba(94, 206, 255, 0.1);
+        }
+
+        .upload-area {
+            text-align: center;
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            animation: floatUpDown 3s ease-in-out infinite;
+        }
+
+        @keyframes floatUpDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .file-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .file-label:active {
+            transform: translateY(-1px);
+        }
+
+        .file-name {
+            display: block;
+            margin-top: 15px;
+            color: #5eceff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            min-height: 22px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .upload-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #5eceff 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .upload-btn.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .upload-btn.active:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(94, 206, 255, 0.5);
+        }
+
+        .upload-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(94, 206, 255, 0.2);
+            border-top-color: #5eceff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #5eceff;
+            font-weight: 500;
+        }
+
+        /* Results Section */
+        .results-section {
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .results-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #e6e6e6;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .result-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(94, 206, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            animation: slideInRight 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(94, 206, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .result-card:hover::before {
+            left: 100%;
+        }
+
+        .result-card:hover {
+            transform: translateX(5px);
+            border-color: rgba(94, 206, 255, 0.3);
+            box-shadow: 0 8px 30px rgba(94, 206, 255, 0.15);
+        }
+
+        .result-icon {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex: 1;
+        }
+
+        .result-filename {
+            font-weight: 600;
+            color: #e6e6e6;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .result-category {
+            display: inline-block;
+            padding: 6px 16px;
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            text-transform: capitalize;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+            color: #fca5a5;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-card {
+                padding: 30px 20px;
+            }
+            
+            .result-card {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📄 Document Classifier</h1>
+            <p>Upload your PDF files for instant AI-powered classification</p>
+        </div>
+
+        <!-- Status Badge -->
+        <div style="text-align: center;">
+            <div class="status-badge" id="statusBadge">
+                <div class="status-dot offline" id="statusDot"></div>
+                <span class="status-text" id="statusText">Checking server...</span>
+            </div>
+        </div>
+
+        <!-- Upload Card -->
+        <div class="upload-card">
+            <div class="upload-area">
+                <!-- Upload Icon -->
+                <svg class="upload-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="#5eceff" stroke-width="2" opacity="0.3"/>
+                    <path d="M50 25V60M50 25L35 40M50 25L65 40" stroke="#5eceff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M30 60L30 70C30 72.7614 32.2386 75 35 75H65C67.7614 75 70 72.7614 70 70V60" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="3" fill="#ec4899">
+                        <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                </svg>
+
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept=".pdf" />
+                    <label for="fileInput" class="file-label">
+                        ✨ Choose PDF File
+                    </label>
+                </div>
+                
+                <div class="file-name" id="fileName"></div>
+                
+                <button class="upload-btn" id="uploadBtn">
+                    🚀 Upload & Classify
+                </button>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span class="loading-text">Processing...</span>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h2 class="results-header">
+                <span>📊</span>
+                Classification Results
+            </h2>
+            <div class="results-list" id="resultsList">
+                <!-- Results will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+                <path d="M35 45L50 30L65 45M50 30V70" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>No documents classified yet. Upload a PDF to get started!</p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SERVER_URL = 'http://100.75.230.47:8000';
+        
+        // State
+        let selectedFile = null;
+        const results = [];
+
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loading = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsList = document.getElementById('resultsList');
+        const emptyState = document.getElementById('emptyState');
+
+        // Initialize particles
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particles.appendChild(particle);
+            }
+        }
+
+        // Check server status
+        async function checkServerStatus() {
+            try {
+                const response = await fetch(`${SERVER_URL}/status`);
+                if (response.ok) {
+                    statusDot.classList.remove('offline');
+                    statusDot.classList.add('online');
+                    statusText.textContent = 'Server Online';
+                } else {
+                    throw new Error('Server not responding');
+                }
+            } catch (error) {
+                statusDot.classList.remove('online');
+                statusDot.classList.add('offline');
+                statusText.textContent = 'Server Offline';
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('active');
+            setTimeout(() => {
+                errorMessage.classList.remove('active');
+            }, 5000);
+        }
+
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.type !== 'application/pdf') {
+                    showError('Please select a PDF file only.');
+                    fileInput.value = '';
+                    return;
+                }
+                selectedFile = file;
+                fileName.textContent = `📎 ${file.name}`;
+                uploadBtn.classList.add('active');
+            }
+        });
+
+        // Upload and classify
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            loading.classList.add('active');
+            uploadBtn.disabled = true;
+            errorMessage.classList.remove('active');
+
+            try {
+                // Upload file
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const uploadResponse = await fetch(`${SERVER_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Upload failed. Please try again.');
+                }
+
+                const uploadData = await uploadResponse.json();
+                const uploadedFilename = uploadData.filename;
+
+                // Classify file
+                const classifyResponse = await fetch(`${SERVER_URL}/classify/${uploadedFilename}`);
+                
+                if (!classifyResponse.ok) {
+                    throw new Error('Classification failed. Please try again.');
+                }
+
+                const classifyData = await classifyResponse.json();
+
+                // Add result
+                addResult({
+                    filename: classifyData.filename || uploadedFilename,
+                    category: classifyData.category || classifyData.predicted_category || 'Unknown'
+                });
+
+                // Reset form
+                fileInput.value = '';
+                fileName.textContent = '';
+                selectedFile = null;
+                uploadBtn.classList.remove('active');
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.classList.remove('active');
+                uploadBtn.disabled = false;
+            }
+        });
+
+        // Add result to list
+        function addResult(result) {
+            results.unshift(result);
+            emptyState.style.display = 'none';
+            resultsSection.style.display = 'block';
+
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            resultCard.innerHTML = `
+                <svg class="result-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="25" y="15" width="50" height="70" rx="5" stroke="#5eceff" stroke-width="3" fill="rgba(94, 206, 255, 0.1)"/>
+                    <line x1="35" y1="30" x2="65" y2="30" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="35" y1="40" x2="65" y2="40" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="35" y1="50" x2="55" y2="50" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="75" cy="75" r="12" fill="#10b981" stroke="white" stroke-width="2"/>
+                    <path d="M70 75L73 78L80 71" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="result-content">
+                    <div class="result-filename">${result.filename}</div>
+                    <span class="result-category">${result.category}</span>
+                </div>
+            `;
+
+            resultsList.insertBefore(resultCard, resultsList.firstChild);
+        }
+
+        // Initialize
+        createParticles();
+        checkServerStatus();
+        
+        // Recheck status every 30 seconds
+        setInterval(checkServerStatus, 30000);
+    </script>
+</body>
+</html>
+
+[End of file]
